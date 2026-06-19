@@ -26,7 +26,7 @@ const STATUS_MAP: Record<string, { label: string; cls: string }> = {
 };
 
 const BookingPage: React.FC = () => {
-  const { bookings, bills, cancelBooking, checkin, markAway, markBack, checkout, payBill } = useStudyRoomStore();
+  const { bookings, bills, cancelBooking, checkin, markAway, markBack, checkout, payBill, setHighlightBillId } = useStudyRoomStore();
   const [filter, setFilter] = useState<FilterType>('active');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -60,6 +60,10 @@ const BookingPage: React.FC = () => {
   };
 
   const goBill = (bookingId: string) => {
+    const bill = bills.find((bl) => bl.bookingId === bookingId);
+    if (bill) {
+      setHighlightBillId(bill.id);
+    }
     Taro.switchTab({ url: '/pages/bill/index' });
   };
 
@@ -184,7 +188,12 @@ const BookingPage: React.FC = () => {
                   )}
                   {b.status === 'timeout' && bill?.status === 'refunded' && (
                     <View className={styles.refundHint}>
-                      ⚠️ 该预约因{bill.refundSource === 'away_timeout' ? '暂离超时' : '签到超时'}已自动释放，待支付账单已退款
+                      ⚠️ 该预约因{bill.refundSource === 'away_timeout' ? '暂离超时' : '签到超时'}已自动释放，账单已退款（来源：{REFUND_SOURCE_MAP[bill.refundSource || ''] || '超时释放'}）
+                    </View>
+                  )}
+                  {b.status === 'cancelled' && bill?.status === 'refunded' && (
+                    <View className={styles.refundHint}>
+                      ⚠️ 该预约已取消，账单已退款
                     </View>
                   )}
 

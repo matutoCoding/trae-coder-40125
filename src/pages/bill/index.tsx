@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import { useStudyRoomStore } from '@/store';
 import BillCard from '@/components/BillCard';
@@ -12,9 +12,22 @@ type TabType = 'bills' | 'rates';
 type BillFilter = 'all' | 'pending' | 'paid' | 'refunded';
 
 const BillPage: React.FC = () => {
-  const { bills, rates, payBill } = useStudyRoomStore();
+  const { bills, rates, payBill, highlightBillId, setHighlightBillId } = useStudyRoomStore();
   const [tab, setTab] = useState<TabType>('bills');
   const [billFilter, setBillFilter] = useState<BillFilter>('all');
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+
+  useDidShow(() => {
+    if (highlightBillId) {
+      const target = bills.find((b) => b.id === highlightBillId);
+      if (target) {
+        const statusFilter = target.status as BillFilter;
+        setBillFilter(statusFilter === 'pending' || statusFilter === 'paid' || statusFilter === 'refunded' ? statusFilter : 'all');
+      }
+      setHighlightId(highlightBillId);
+      setHighlightBillId(null);
+    }
+  });
 
   const summary = useMemo(() => {
     const paid = bills.filter((b) => b.status === 'paid');
@@ -119,7 +132,9 @@ const BillPage: React.FC = () => {
             </View>
           ) : (
             filteredBills.map((b) => (
-              <BillCard key={b.id} bill={b} showDetail onPay={handlePay} />
+              <View key={b.id} id={`bill-${b.id}`} className={classnames(styles.billItemWrapper, highlightId === b.id && styles.billItemHighlight)}>
+                <BillCard bill={b} showDetail onPay={handlePay} />
+              </View>
             ))
           )}
         </>

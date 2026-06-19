@@ -150,6 +150,7 @@ const WaitingPage: React.FC = () => {
           <WaitingCard
             key={item.id}
             item={item}
+            seats={seats}
             onCancel={handleCancel}
             onConfirm={handleConfirm}
           />

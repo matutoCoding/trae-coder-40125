@@ -8,7 +8,7 @@ import styles from './index.module.scss';
 
 const MinePage: React.FC = () => {
   const {
-    bills, bookings, waitingList,
+    bills, bookings, waitingList, seats,
     cancelBooking, checkin, markAway, markBack, checkout,
     confirmWaiting, cancelWaiting, expireNotifiedWaiting
   } = useStudyRoomStore();
@@ -169,32 +169,37 @@ const MinePage: React.FC = () => {
             <Text className={styles.waitingNotifyIcon}>🔔</Text>
             <Text className={styles.waitingNotifyText}>候补待确认（{notifiedWaitings.length}）</Text>
           </View>
-          {notifiedWaitings.map((w) => (
-            <View key={w.id} className={styles.waitingItem}>
-              <View className={styles.waitingItemInfo}>
-                <Text className={styles.waitingItemSeat}>
-                  {w.seatId ? `座位候补` : '全局候补'}
-                </Text>
-                <Text className={styles.waitingItemTime}>
-                  {formatTime(w.startTime)} - {formatTime(w.endTime)}
-                </Text>
+          {notifiedWaitings.map((w) => {
+            const seatCode = w.seatId
+              ? (seats.find((s) => s.id === w.seatId)?.code || w.seatId.replace('seat_', ''))
+              : null;
+            return (
+              <View key={w.id} className={styles.waitingItem}>
+                <View className={styles.waitingItemInfo}>
+                  <Text className={styles.waitingItemSeat}>
+                    {seatCode ? `座位 ${seatCode} 空出` : '全局候补'}
+                  </Text>
+                  <Text className={styles.waitingItemTime}>
+                    {formatTime(w.startTime)} - {formatTime(w.endTime)}
+                  </Text>
+                </View>
+                <View className={styles.waitingItemBtns}>
+                  <Button
+                    className={`${styles.waitingBtn} ${styles.waitingBtnConfirm}`}
+                    onClick={() => handleConfirmWaiting(w.id)}
+                  >
+                    立即确认
+                  </Button>
+                  <Button
+                    className={`${styles.waitingBtn} ${styles.waitingBtnCancel}`}
+                    onClick={() => handleCancelWaiting(w.id)}
+                  >
+                    放弃
+                  </Button>
+                </View>
               </View>
-              <View className={styles.waitingItemBtns}>
-                <Button
-                  className={`${styles.waitingBtn} ${styles.waitingBtnConfirm}`}
-                  onClick={() => handleConfirmWaiting(w.id)}
-                >
-                  立即确认
-                </Button>
-                <Button
-                  className={`${styles.waitingBtn} ${styles.waitingBtnCancel}`}
-                  onClick={() => handleCancelWaiting(w.id)}
-                >
-                  放弃
-                </Button>
-              </View>
-            </View>
-          ))}
+            );
+          })}
           <View className={styles.waitingNotifyTip}>
             请在10分钟内确认，超时将自动释放给下一位
           </View>

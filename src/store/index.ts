@@ -64,6 +64,7 @@ interface StudyRoomStore {
   selectedDate: string;
   startTime: string;
   endTime: string;
+  highlightBillId: string | null;
 
   setSelectedSeat: (id: string | null) => void;
   setSelectedDate: (d: string) => void;
@@ -83,6 +84,7 @@ interface StudyRoomStore {
   releaseTimeoutSeats: () => string[];
   releaseAwayTimeout: () => string[];
   expireNotifiedWaiting: () => void;
+  setHighlightBillId: (id: string | null) => void;
   addSeat: (seat: Omit<Seat, 'id'>) => void;
   updateSeat: (id: string, data: Partial<Seat>) => void;
   toggleSeatEnabled: (id: string) => void;
@@ -104,11 +106,42 @@ export const useStudyRoomStore = create<StudyRoomStore>((set, get) => ({
   selectedDate: new Date().toISOString().slice(0, 10),
   startTime: '09:00',
   endTime: '12:00',
+  highlightBillId: null,
 
   setSelectedSeat: (id) => set({ selectedSeatId: id }),
-  setSelectedDate: (d) => set({ selectedDate: d, selectedSeatId: null }),
-  setStartTime: (t) => set({ startTime: t }),
-  setEndTime: (t) => set({ endTime: t }),
+  setSelectedDate: (d) => {
+    const { selectedSeatId, seats, bookings, startTime, endTime } = get();
+    let cleared = false;
+    if (selectedSeatId) {
+      const seat = seats.find((s) => s.id === selectedSeatId);
+      if (seat && computeSeatStatus(seat, bookings, d, startTime, endTime) !== 'free') {
+        cleared = true;
+      }
+    }
+    set({ selectedDate: d, ...(cleared ? { selectedSeatId: null } : {}) });
+  },
+  setStartTime: (t) => {
+    const { selectedSeatId, seats, bookings, selectedDate, endTime } = get();
+    let cleared = false;
+    if (selectedSeatId) {
+      const seat = seats.find((s) => s.id === selectedSeatId);
+      if (seat && computeSeatStatus(seat, bookings, selectedDate, t, endTime) !== 'free') {
+        cleared = true;
+      }
+    }
+    set({ startTime: t, ...(cleared ? { selectedSeatId: null } : {}) });
+  },
+  setEndTime: (t) => {
+    const { selectedSeatId, seats, bookings, selectedDate, startTime } = get();
+    let cleared = false;
+    if (selectedSeatId) {
+      const seat = seats.find((s) => s.id === selectedSeatId);
+      if (seat && computeSeatStatus(seat, bookings, selectedDate, startTime, t) !== 'free') {
+        cleared = true;
+      }
+    }
+    set({ endTime: t, ...(cleared ? { selectedSeatId: null } : {}) });
+  },
 
   toggleSeatSelection: (id) => {
     const { seats, selectedSeatId, bookings, selectedDate, startTime, endTime } = get();
@@ -184,7 +217,7 @@ export const useStudyRoomStore = create<StudyRoomStore>((set, get) => ({
           b.id === id ? { ...b, status: 'cancelled' as const } : b
         ),
         bills: state.bills.map((bl) =>
-          bl.bookingId === id && bl.status === 'pending'
+          bl.bookingId === id && (bl.status === 'pending' || bl.status === 'paid')
             ? { ...bl, status: 'refunded' as const, refundSource: 'cancel' as const }
             : bl
         )
@@ -285,18 +318,23 @@ export const useStudyRoomStore = create<StudyRoomStore>((set, get) => ({
 
   cancelWaiting: (id) => {
     let seatId: string | undefined;
+    let wasNotified = false;
     set((state) => {
       const item = state.waitingList.find((w) => w.id === id);
       if (!item) return state;
       seatId = item.seatId;
+      wasNotified = item.status === 'notified';
       return {
         waitingList: state.waitingList.map((w) =>
           w.id === id ? { ...w, status: 'cancelled' as const } : w
         )
       };
     });
+    if (wasNotified && seatId) {
+      tryAutoNotify(seatId, get);
+    }
     reorderWaitingQueue(seatId ?? null, get, set);
-    console.log('[Waiting] 取消候补:', id);
+    console.log('[Waiting] 取消候补:', id, wasNotified ? '(释放座位通知下一位)' : '');
   },
 
   confirmWaiting: (id) => {
@@ -363,8 +401,8 @@ export const useStudyRoomStore = create<StudyRoomStore>((set, get) => ({
       bills: [...state.bills, newBill]
     }));
 
-    reorderWaitingQueue(item.seatId ?? null, get, set);
-    console.log('[Waiting] 补位确认成功:', item.id, '→ 预约:', newBooking.id);
+    reorderWaitingQueue(targetSeatId, get, set);
+    console.log('[Waiting] 补位确认成功:', item.id, '→ 预约:', newBooking.id, '座位:', seat.code);
     return newBooking;
   },
 
@@ -388,7 +426,7 @@ export const useStudyRoomStore = create<StudyRoomStore>((set, get) => ({
       });
 
       const updatedBills = state.bills.map((bl) =>
-        releasedBillIds.includes(bl.bookingId) && bl.status === 'pending'
+        releasedBillIds.includes(bl.bookingId) && (bl.status === 'pending' || bl.status === 'paid')
           ? { ...bl, status: 'refunded' as const, refundSource: 'timeout' as const }
           : bl
       );
@@ -426,7 +464,7 @@ export const useStudyRoomStore = create<StudyRoomStore>((set, get) => ({
       });
 
       const updatedBills = state.bills.map((bl) =>
-        releasedBookingIds.includes(bl.bookingId) && bl.status === 'pending'
+        releasedBookingIds.includes(bl.bookingId) && (bl.status === 'pending' || bl.status === 'paid')
           ? { ...bl, status: 'refunded' as const, refundSource: 'away_timeout' as const }
           : bl
       );
@@ -474,6 +512,8 @@ export const useStudyRoomStore = create<StudyRoomStore>((set, get) => ({
       console.log('[Waiting] 通知超时过期，转下一位:', uniqueSeatIds);
     }
   },
+
+  setHighlightBillId: (id) => set({ highlightBillId: id }),
 
   addSeat: (data) => {
     const id = `seat_${Date.now()}`;
@@ -546,11 +586,11 @@ function tryAutoNotify(seatId: string, get: () => StudyRoomStore) {
   useStudyRoomStore.setState((state) => ({
     waitingList: state.waitingList.map((w) =>
       w.id === next.id
-        ? { ...w, status: 'notified' as const, notifiedAt: nowStr() }
+        ? { ...w, status: 'notified' as const, notifiedAt: nowStr(), seatId: seatId }
         : w
     )
   }));
-  console.log('[AutoNotify] 座位释放，通知候补:', next.userName, '#', next.queuePosition);
+  console.log('[AutoNotify] 座位释放，通知候补:', next.userName, '#', next.queuePosition, '分配座位:', seatId);
 }
 
 function reorderWaitingQueue(seatId: string | null, get: () => StudyRoomStore, _set: any) {

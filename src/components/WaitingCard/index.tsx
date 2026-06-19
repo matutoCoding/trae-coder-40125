@@ -1,17 +1,18 @@
 import React from 'react';
 import { View, Text, Button } from '@tarojs/components';
 import classnames from 'classnames';
-import type { WaitingItem } from '@/types';
+import type { WaitingItem, Seat } from '@/types';
 import { formatTime } from '@/utils/time';
 import styles from './index.module.scss';
 
 interface WaitingCardProps {
   item: WaitingItem;
+  seats?: Seat[];
   onCancel?: (id: string) => void;
   onConfirm?: (id: string) => void;
 }
 
-const WaitingCard: React.FC<WaitingCardProps> = ({ item, onCancel, onConfirm }) => {
+const WaitingCard: React.FC<WaitingCardProps> = ({ item, seats, onCancel, onConfirm }) => {
   const statusClass =
     item.status === 'waiting'
       ? styles.statusWaiting
@@ -34,13 +35,21 @@ const WaitingCard: React.FC<WaitingCardProps> = ({ item, onCancel, onConfirm }) 
 
   const isActive = item.status === 'waiting' || item.status === 'notified';
 
+  const seatCode = item.seatId && seats
+    ? (seats.find((s) => s.id === item.seatId)?.code || item.seatId.replace('seat_', ''))
+    : item.seatId
+    ? item.seatId.replace('seat_', '')
+    : null;
+
+  const isGlobalNotified = item.status === 'notified' && item.seatId;
+
   return (
     <View className={styles.card}>
       <View className={styles.header}>
         <View className={styles.position}>
           <View className={styles.positionBadge}>#{item.queuePosition}</View>
           <Text className={styles.positionText}>
-            {item.seatId ? '指定座位候补' : '全局候补队列'}
+            {isGlobalNotified ? '全局候补（已分配座位）' : item.seatId ? '指定座位候补' : '全局候补队列'}
           </Text>
         </View>
         <Text className={classnames(styles.status, statusClass)}>{statusText}</Text>
@@ -58,22 +67,22 @@ const WaitingCard: React.FC<WaitingCardProps> = ({ item, onCancel, onConfirm }) 
         <Text className={styles.infoHighlight}>{item.userName}</Text>
       </View>
 
-      {item.seatId && (
+      {seatCode && (
         <View className={styles.infoRow}>
-          <Text>目标座位</Text>
-          <Text className={styles.infoHighlight}>{item.seatId.replace('seat_', '')}</Text>
+          <Text>{item.status === 'notified' || item.status === 'confirmed' ? '分配座位' : '目标座位'}</Text>
+          <Text className={styles.infoHighlight}>{seatCode}</Text>
         </View>
       )}
 
       {item.status === 'notified' && item.notifiedAt && (
         <View className={styles.notifiedHint}>
-          🎉 有空位啦！请于10分钟内确认，超时将自动释放给下一位
+          🎉 有空位啦！座位 {seatCode} 已为您保留，请于10分钟内确认，超时将自动释放给下一位
         </View>
       )}
 
       {item.status === 'confirmed' && (
         <View className={styles.confirmedHint}>
-          ✅ 已成功补位，座位已为您锁定
+          ✅ 已成功补位到座位 {seatCode || ''}，座位已为您锁定
         </View>
       )}
 

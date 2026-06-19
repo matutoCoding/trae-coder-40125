@@ -201,3 +201,22 @@
   background: $color-primary;
   color: $color-text-white;
 }
+
+.billItemWrapper {
+  margin-bottom: $spacing-md;
+}
+
+.billItemHighlight {
+  animation: highlightPulse 2s ease-in-out;
+
+  :global {
+    .card {
+      border: 4rpx solid $color-primary;
+    }
+  }
+}
+
+@keyframes highlightPulse {
+  0% { background: rgba(43, 122, 104, 0.15); }
+  100% { background: transparent; }
+}
