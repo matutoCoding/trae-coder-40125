@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Button, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import dayjs from 'dayjs';
-import { useDidShow } from '@tarojs/taro';
-import { useStudyRoomStore } from '@/store';
+import { useStudyRoomStore, computeSeatStatus } from '@/store';
 import { calculateBillingSegments, calculateTotalAmount, formatMinutes, getRateTypeLabel } from '@/utils/billing';
 import { diffMinutes } from '@/utils/time';
 import SeatGrid from '@/components/SeatGrid';
@@ -13,18 +12,8 @@ import styles from './index.module.scss';
 
 const SeatPage: React.FC = () => {
   const {
-    seats,
-    selectedSeatId,
-    selectedDate,
-    startTime,
-    endTime,
-    rates,
-    setSelectedDate,
-    setStartTime,
-    setEndTime,
-    toggleSeatSelection,
-    bookSeat,
-    addWaiting
+    seats, selectedSeatId, selectedDate, startTime, endTime, rates, bookings,
+    setSelectedDate, setStartTime, setEndTime, toggleSeatSelection, bookSeat, addWaiting
   } = useStudyRoomStore();
 
   const [activeZone, setActiveZone] = useState('A区');
@@ -44,13 +33,23 @@ const SeatPage: React.FC = () => {
     return days;
   }, []);
 
-  const stats = useMemo(() => {
-    const free = seats.filter((s) => s.status === 'free' && s.enabled).length;
-    const occupied = seats.filter((s) => s.status === 'occupied').length;
-    return { free, occupied, total: seats.filter((s) => s.enabled).length };
-  }, [seats]);
+  const computedSeats = useMemo(() => {
+    return seats.map((s) => ({
+      ...s,
+      status: computeSeatStatus(s, bookings, selectedDate, startTime, endTime)
+    }));
+  }, [seats, bookings, selectedDate, startTime, endTime]);
 
-  const selectedSeat = useMemo(() => seats.find((s) => s.id === selectedSeatId), [seats, selectedSeatId]);
+  const stats = useMemo(() => {
+    const free = computedSeats.filter((s) => s.status === 'free').length;
+    const occupied = computedSeats.filter((s) => s.status === 'occupied').length;
+    return { free, occupied, total: computedSeats.filter((s) => s.enabled).length };
+  }, [computedSeats]);
+
+  const selectedSeat = useMemo(
+    () => computedSeats.find((s) => s.id === selectedSeatId),
+    [computedSeats, selectedSeatId]
+  );
 
   const enabledRates = useMemo(() => rates.filter((r) => r.enabled), [rates]);
 
@@ -58,8 +57,7 @@ const SeatPage: React.FC = () => {
     const start = `${selectedDate} ${startTime}`;
     const end = `${selectedDate} ${endTime}`;
     if (diffMinutes(start, end) > 0) {
-      const segs = calculateBillingSegments(start, end, enabledRates);
-      setSegments(segs);
+      setSegments(calculateBillingSegments(start, end, enabledRates));
     } else {
       setSegments([]);
     }
@@ -69,9 +67,10 @@ const SeatPage: React.FC = () => {
   const totalMinutes = useMemo(() => segments.reduce((s, x) => s + x.durationMinutes, 0), [segments]);
 
   useDidShow(() => {
-    const { releaseTimeoutSeats, releaseAwayTimeout } = useStudyRoomStore.getState();
+    const { releaseTimeoutSeats, releaseAwayTimeout, expireNotifiedWaiting } = useStudyRoomStore.getState();
     const r1 = releaseTimeoutSeats();
     const r2 = releaseAwayTimeout();
+    expireNotifiedWaiting();
     const all = [...r1, ...r2];
     if (all.length > 0) {
       Taro.showToast({ title: `${all.length}个超时座位已释放`, icon: 'none' });
@@ -90,7 +89,6 @@ const SeatPage: React.FC = () => {
     const booking = bookSeat();
     if (booking) {
       Taro.showToast({ title: '预订成功！请于开始时间后15分钟内签到', icon: 'success', duration: 2500 });
-      console.log('[SeatPage] 预订成功:', booking);
     }
   };
 
@@ -98,11 +96,10 @@ const SeatPage: React.FC = () => {
     const item = addWaiting(selectedSeatId || undefined);
     if (item) {
       Taro.showToast({ title: `候补登记成功，排位#${item.queuePosition}`, icon: 'none' });
-      console.log('[SeatPage] 候补登记:', item);
     }
   };
 
-  const canBook = selectedSeat && totalMinutes > 0;
+  const canBook = selectedSeat && selectedSeat.status === 'free' && totalMinutes > 0;
 
   const zones = useMemo(() => {
     const zoneSet = new Set(seats.filter((s) => s.enabled).map((s) => s.zone));
@@ -160,25 +157,9 @@ const SeatPage: React.FC = () => {
               <Text className={styles.segTitle}>📊 分段计费明细（预估）</Text>
               <View style={{ marginTop: 8 }}>
                 {segments.map((seg, idx) => (
-                  <View
-                    key={idx}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '8rpx 0'
-                    }}
-                  >
+                  <View key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8rpx 0' }}>
                     <View style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <View
-                        style={{
-                          fontSize: 20,
-                          padding: '2rpx 10rpx',
-                          borderRadius: 4,
-                          color: seg.rateType === 'peak' ? '#F53F3F' : '#00B42A',
-                          background: seg.rateType === 'peak' ? 'rgba(245,63,63,0.1)' : 'rgba(0,180,42,0.1)'
-                        }}
-                      >
+                      <View style={{ fontSize: 20, padding: '2rpx 10rpx', borderRadius: 4, color: seg.rateType === 'peak' ? '#F53F3F' : '#00B42A', background: seg.rateType === 'peak' ? 'rgba(245,63,63,0.1)' : 'rgba(0,180,42,0.1)' }}>
                         {getRateTypeLabel(seg.rateType)}
                       </View>
                       <Text style={{ fontSize: 24, color: '#4E5969' }}>
@@ -194,23 +175,18 @@ const SeatPage: React.FC = () => {
 
           <View className={styles.zoneTabs}>
             {zones.map((z) => (
-              <View
-                key={z}
-                className={classnames(styles.zoneTab, activeZone === z && styles.zoneTabActive)}
-                onClick={() => setActiveZone(z)}
-              >
+              <View key={z} className={classnames(styles.zoneTab, activeZone === z && styles.zoneTabActive)} onClick={() => setActiveZone(z)}>
                 <Text>{z}</Text>
               </View>
             ))}
           </View>
 
           <SeatGrid
-            seats={seats}
+            seats={computedSeats}
             selectedSeatId={selectedSeatId}
             onSeatClick={toggleSeatSelection}
             zone={activeZone}
           />
-
           <View style={{ height: 80 }} />
         </View>
       </View>
@@ -219,9 +195,7 @@ const SeatPage: React.FC = () => {
         <View className={styles.priceInfo}>
           {selectedSeat ? (
             <>
-              <Text className={styles.priceLabel}>
-                {selectedSeat.code} · {formatMinutes(totalMinutes)}
-              </Text>
+              <Text className={styles.priceLabel}>{selectedSeat.code} · {formatMinutes(totalMinutes)}</Text>
               <Text className={styles.priceValue}>¥{totalAmount.toFixed(2)}</Text>
               <Text className={styles.priceHint}>含高峰/平峰分段计费</Text>
             </>
@@ -233,20 +207,8 @@ const SeatPage: React.FC = () => {
             </>
           )}
         </View>
-
-        <Button
-          className={classnames(styles.btn, !canBook && styles.btnDisabled, styles.btnWarn)}
-          onClick={handleWaiting}
-        >
-          候补
-        </Button>
-
-        <Button
-          className={classnames(styles.btn, !canBook && styles.btnDisabled, styles.btnPrimary)}
-          onClick={handleBook}
-        >
-          立即预订
-        </Button>
+        <Button className={classnames(styles.btn, !canBook && styles.btnDisabled, styles.btnWarn)} onClick={handleWaiting}>候补</Button>
+        <Button className={classnames(styles.btn, !canBook && styles.btnDisabled, styles.btnPrimary)} onClick={handleBook}>立即预订</Button>
       </View>
     </ScrollView>
   );

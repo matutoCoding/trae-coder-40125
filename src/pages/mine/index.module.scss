@@ -226,3 +226,113 @@
   background: rgba(245, 63, 63, 0.1);
   color: $color-error;
 }
+
+.waitingNotify {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin: 0 $page-padding $spacing-md;
+  border-left: 8rpx solid $color-warning;
+}
+
+.waitingNotifyTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-md;
+}
+
+.waitingNotifyIcon {
+  font-size: $font-size-lg;
+}
+
+.waitingNotifyText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-warning;
+}
+
+.waitingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm 0;
+  border-bottom: 2rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.waitingItemInfo {
+  flex: 1;
+}
+
+.waitingItemSeat {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.waitingItemTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.waitingItemBtns {
+  display: flex;
+  gap: $spacing-xs;
+}
+
+.waitingBtn {
+  @include button-reset;
+  padding: 0 $spacing-md;
+  height: 56rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  transition: all $transition-fast;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.96);
+  }
+}
+
+.waitingBtnConfirm {
+  background: linear-gradient(135deg, $color-primary, $color-primary-light);
+  color: $color-text-white;
+}
+
+.waitingBtnCancel {
+  background: $color-bg-page;
+  color: $color-text-tertiary;
+}
+
+.waitingNotifyTip {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 2rpx dashed $color-divider;
+}
+
+.menuBadge {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: $radius-round;
+  background: $color-error;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-xs;
+}
+
+.menuBadgeText {
+  font-size: 20rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-bold;
+}

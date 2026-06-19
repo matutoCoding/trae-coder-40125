@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 import classnames from 'classnames';
 import { useStudyRoomStore } from '@/store';
 import BillCard from '@/components/BillCard';
@@ -8,10 +9,12 @@ import type { RateType } from '@/types';
 import styles from './index.module.scss';
 
 type TabType = 'bills' | 'rates';
+type BillFilter = 'all' | 'pending' | 'paid' | 'refunded';
 
 const BillPage: React.FC = () => {
-  const { bills, rates } = useStudyRoomStore();
+  const { bills, rates, payBill } = useStudyRoomStore();
   const [tab, setTab] = useState<TabType>('bills');
+  const [billFilter, setBillFilter] = useState<BillFilter>('all');
 
   const summary = useMemo(() => {
     const paid = bills.filter((b) => b.status === 'paid');
@@ -22,8 +25,33 @@ const BillPage: React.FC = () => {
 
   const enabledRates = useMemo(() => rates.filter((r) => r.enabled), [rates]);
 
+  const filteredBills = useMemo(() => {
+    if (billFilter === 'all') return bills;
+    return bills.filter((b) => b.status === billFilter);
+  }, [bills, billFilter]);
+
   const getTagClass = (type: RateType) =>
     type === 'peak' ? styles.tagPeak : styles.tagOffpeak;
+
+  const handlePay = (billId: string) => {
+    Taro.showModal({
+      title: '确认支付',
+      content: '确认支付该笔账单？',
+      success: (res) => {
+        if (res.confirm) {
+          payBill(billId);
+          Taro.showToast({ title: '支付成功', icon: 'success' });
+        }
+      }
+    });
+  };
+
+  const billFilters: { key: BillFilter; label: string }[] = [
+    { key: 'all', label: '全部' },
+    { key: 'pending', label: '待支付' },
+    { key: 'paid', label: '已支付' },
+    { key: 'refunded', label: '已退款' }
+  ];
 
   return (
     <ScrollView scrollY className={styles.page}>
@@ -71,14 +99,30 @@ const BillPage: React.FC = () => {
       </View>
 
       {tab === 'bills' && (
-        bills.length === 0 ? (
-          <View className={styles.empty}>
-            <Text className={styles.emptyIcon}>💰</Text>
-            <Text className={styles.emptyText}>暂无消费记录</Text>
+        <>
+          <View className={styles.billFilter}>
+            {billFilters.map((f) => (
+              <View
+                key={f.key}
+                className={classnames(styles.billFilterTab, billFilter === f.key && styles.billFilterActive)}
+                onClick={() => setBillFilter(f.key)}
+              >
+                <Text>{f.label}</Text>
+              </View>
+            ))}
           </View>
-        ) : (
-          bills.map((b) => <BillCard key={b.id} bill={b} showDetail />)
-        )
+
+          {filteredBills.length === 0 ? (
+            <View className={styles.empty}>
+              <Text className={styles.emptyIcon}>💰</Text>
+              <Text className={styles.emptyText}>暂无消费记录</Text>
+            </View>
+          ) : (
+            filteredBills.map((b) => (
+              <BillCard key={b.id} bill={b} showDetail onPay={handlePay} />
+            ))
+          )}
+        </>
       )}
 
       {tab === 'rates' && (

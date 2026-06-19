@@ -175,3 +175,29 @@
 .emptyText {
   font-size: $font-size-md;
 }
+
+.billFilter {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  padding: 0 $spacing-xs;
+}
+
+.billFilterTab {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  background: $color-bg-card;
+  color: $color-text-secondary;
+  box-shadow: $shadow-card;
+  transition: all $transition-fast;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.billFilterActive {
+  background: $color-primary;
+  color: $color-text-white;
+}

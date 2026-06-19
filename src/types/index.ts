@@ -80,4 +80,5 @@ export interface Bill {
   status: 'pending' | 'paid' | 'refunded';
   createdAt: string;
   paidAt?: string;
+  refundSource?: 'timeout' | 'cancel' | 'away_timeout';
 }

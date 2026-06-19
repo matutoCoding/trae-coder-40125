@@ -26,6 +26,28 @@
   opacity: 0.9;
 }
 
+.notifiedBanner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  background: rgba(255, 125, 0, 0.08);
+  border: 2rpx solid rgba(255, 125, 0, 0.2);
+  border-radius: $radius-md;
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.notifiedBannerIcon {
+  font-size: $font-size-lg;
+}
+
+.notifiedBannerText {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+}
+
 .stats {
   display: flex;
   gap: $spacing-sm;

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Button, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
+import { useDidShow } from '@tarojs/taro';
 import classnames from 'classnames';
 import { useStudyRoomStore } from '@/store';
 import WaitingCard from '@/components/WaitingCard';
@@ -18,10 +19,15 @@ const WaitingPage: React.FC = () => {
     seats,
     addWaiting,
     cancelWaiting,
-    confirmWaiting
+    confirmWaiting,
+    expireNotifiedWaiting
   } = useStudyRoomStore();
 
   const [filter, setFilter] = useState<FilterType>('all');
+
+  useDidShow(() => {
+    expireNotifiedWaiting();
+  });
 
   const stats = useMemo(() => {
     const waiting = waitingList.filter((w) => w.status === 'waiting').length;
@@ -41,7 +47,6 @@ const WaitingPage: React.FC = () => {
     const item = addWaiting(selectedSeatId || undefined);
     if (item) {
       Taro.showToast({ title: `候补登记成功，排位#${item.queuePosition}`, icon: 'success' });
-      console.log('[WaitingPage] 新增候补:', item);
     }
   };
 
@@ -62,7 +67,6 @@ const WaitingPage: React.FC = () => {
     const booking = confirmWaiting(id);
     if (booking) {
       Taro.showToast({ title: `补位成功！座位${booking.seatCode}，请15分钟内签到`, icon: 'success', duration: 3000 });
-      console.log('[WaitingPage] 补位确认:', booking);
     } else {
       Taro.showToast({ title: '补位失败，座位已被占用', icon: 'none' });
     }
@@ -96,6 +100,15 @@ const WaitingPage: React.FC = () => {
           </View>
         </View>
       </View>
+
+      {stats.notified > 0 && (
+        <View className={styles.notifiedBanner}>
+          <Text className={styles.notifiedBannerIcon}>🔔</Text>
+          <Text className={styles.notifiedBannerText}>
+            您有 {stats.notified} 条候补待确认，请尽快处理（10分钟内有效）
+          </Text>
+        </View>
+      )}
 
       <View className={styles.formCard}>
         <Text className={styles.formTitle}>快速候补登记</Text>

@@ -1,13 +1,21 @@
 import React, { useMemo } from 'react';
 import { View, Text, Button, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import dayjs from 'dayjs';
 import { useStudyRoomStore } from '@/store';
 import { formatTime } from '@/utils/time';
 import styles from './index.module.scss';
 
 const MinePage: React.FC = () => {
-  const { bills, bookings, cancelBooking, checkin, markAway, markBack, checkout } = useStudyRoomStore();
+  const {
+    bills, bookings, waitingList,
+    cancelBooking, checkin, markAway, markBack, checkout,
+    confirmWaiting, cancelWaiting, expireNotifiedWaiting
+  } = useStudyRoomStore();
+
+  useDidShow(() => {
+    expireNotifiedWaiting();
+  });
 
   const stats = useMemo(() => {
     const paid = bills.filter((b) => b.status === 'paid');
@@ -23,11 +31,15 @@ const MinePage: React.FC = () => {
     };
   }, [bills, bookings]);
 
+  const notifiedWaitings = useMemo(() => {
+    return waitingList.filter((w) => w.status === 'notified');
+  }, [waitingList]);
+
   const menus = [
     { icon: '📋', label: '时段费率表', page: 'rate' },
     { icon: '🪑', label: '座位管理', page: 'seat-admin' },
     { icon: '📊', label: '我的预约', page: 'booking' },
-    { icon: '🔔', label: '消息通知', page: '' },
+    { icon: '🔔', label: '候补通知', page: 'waiting' },
     { icon: '⚙️', label: '系统设置', page: '' }
   ];
 
@@ -85,6 +97,28 @@ const MinePage: React.FC = () => {
     });
   };
 
+  const handleConfirmWaiting = (id: string) => {
+    const booking = confirmWaiting(id);
+    if (booking) {
+      Taro.showToast({ title: `补位成功！座位${booking.seatCode}`, icon: 'success', duration: 3000 });
+    } else {
+      Taro.showToast({ title: '补位失败，座位已被占用', icon: 'none' });
+    }
+  };
+
+  const handleCancelWaiting = (id: string) => {
+    Taro.showModal({
+      title: '取消候补',
+      content: '确认放弃该候补补位？',
+      success: (res) => {
+        if (res.confirm) {
+          cancelWaiting(id);
+          Taro.showToast({ title: '已取消候补', icon: 'none' });
+        }
+      }
+    });
+  };
+
   const getStatusText = () => {
     if (!stats.currentBooking) return '';
     const s = stats.currentBooking.status;
@@ -128,6 +162,44 @@ const MinePage: React.FC = () => {
           <Text className={styles.statLabel}>累计消费</Text>
         </View>
       </View>
+
+      {notifiedWaitings.length > 0 && (
+        <View className={styles.waitingNotify}>
+          <View className={styles.waitingNotifyTitle}>
+            <Text className={styles.waitingNotifyIcon}>🔔</Text>
+            <Text className={styles.waitingNotifyText}>候补待确认（{notifiedWaitings.length}）</Text>
+          </View>
+          {notifiedWaitings.map((w) => (
+            <View key={w.id} className={styles.waitingItem}>
+              <View className={styles.waitingItemInfo}>
+                <Text className={styles.waitingItemSeat}>
+                  {w.seatId ? `座位候补` : '全局候补'}
+                </Text>
+                <Text className={styles.waitingItemTime}>
+                  {formatTime(w.startTime)} - {formatTime(w.endTime)}
+                </Text>
+              </View>
+              <View className={styles.waitingItemBtns}>
+                <Button
+                  className={`${styles.waitingBtn} ${styles.waitingBtnConfirm}`}
+                  onClick={() => handleConfirmWaiting(w.id)}
+                >
+                  立即确认
+                </Button>
+                <Button
+                  className={`${styles.waitingBtn} ${styles.waitingBtnCancel}`}
+                  onClick={() => handleCancelWaiting(w.id)}
+                >
+                  放弃
+                </Button>
+              </View>
+            </View>
+          ))}
+          <View className={styles.waitingNotifyTip}>
+            请在10分钟内确认，超时将自动释放给下一位
+          </View>
+        </View>
+      )}
 
       {stats.currentBooking && (
         <View className={styles.currentBooking}>
@@ -204,6 +276,11 @@ const MinePage: React.FC = () => {
                 <Text>{m.icon}</Text>
               </View>
               <Text className={styles.menuLabel}>{m.label}</Text>
+              {m.label === '候补通知' && notifiedWaitings.length > 0 && (
+                <View className={styles.menuBadge}>
+                  <Text className={styles.menuBadgeText}>{notifiedWaitings.length}</Text>
+                </View>
+              )}
               <Text className={styles.menuArrow}>›</Text>
             </View>
           ))}
