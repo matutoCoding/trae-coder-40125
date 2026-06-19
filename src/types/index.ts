@@ -10,6 +10,7 @@ export interface Seat {
   type: SeatType;
   status: SeatStatus;
   zone: string;
+  enabled: boolean;
 }
 
 export type RateType = 'peak' | 'offpeak' | 'normal';
@@ -22,6 +23,7 @@ export interface TimeRate {
   endTime: string;
   pricePerHour: number;
   dayOfWeek: number[];
+  enabled: boolean;
 }
 
 export interface Booking {
@@ -32,11 +34,13 @@ export interface Booking {
   userName: string;
   startTime: string;
   endTime: string;
-  status: 'reserved' | 'checkedin' | 'completed' | 'cancelled' | 'timeout';
+  status: 'reserved' | 'checkedin' | 'away' | 'completed' | 'cancelled' | 'timeout';
   createdAt: string;
   checkinTime?: string;
   checkoutTime?: string;
   timeoutMinutes: number;
+  awayAt?: string;
+  awayTimeoutMinutes: number;
 }
 
 export interface WaitingItem {

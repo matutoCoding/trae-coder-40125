@@ -24,7 +24,8 @@ const SeatPage: React.FC = () => {
     toggleSeatSelection,
     bookSeat,
     addWaiting,
-    releaseTimeoutSeats
+    releaseTimeoutSeats,
+    releaseAwayTimeout
   } = useStudyRoomStore();
 
   const [activeZone, setActiveZone] = useState('A区');
@@ -45,35 +46,42 @@ const SeatPage: React.FC = () => {
   }, []);
 
   const stats = useMemo(() => {
-    const free = seats.filter((s) => s.status === 'free').length;
+    const free = seats.filter((s) => s.status === 'free' && s.enabled).length;
     const occupied = seats.filter((s) => s.status === 'occupied').length;
-    return { free, occupied, total: seats.length - 1 };
+    return { free, occupied, total: seats.filter((s) => s.enabled).length };
   }, [seats]);
 
   const selectedSeat = useMemo(() => seats.find((s) => s.id === selectedSeatId), [seats, selectedSeatId]);
+
+  const enabledRates = useMemo(() => rates.filter((r) => r.enabled), [rates]);
 
   useEffect(() => {
     const start = `${selectedDate} ${startTime}`;
     const end = `${selectedDate} ${endTime}`;
     if (diffMinutes(start, end) > 0) {
-      const segs = calculateBillingSegments(start, end, rates);
+      const segs = calculateBillingSegments(start, end, enabledRates);
       setSegments(segs);
     } else {
       setSegments([]);
     }
-  }, [selectedDate, startTime, endTime, rates]);
+  }, [selectedDate, startTime, endTime, enabledRates]);
 
   const totalAmount = useMemo(() => calculateTotalAmount(segments), [segments]);
   const totalMinutes = useMemo(() => segments.reduce((s, x) => s + x.durationMinutes, 0), [segments]);
 
   useEffect(() => {
-    const released = releaseTimeoutSeats();
-    if (released.length > 0) {
-      Taro.showToast({ title: `${released.length}个超时座位已释放`, icon: 'none' });
-    }
-    const timer = setInterval(() => releaseTimeoutSeats(), 60000);
+    const doRelease = () => {
+      const r1 = releaseTimeoutSeats();
+      const r2 = releaseAwayTimeout();
+      const all = [...r1, ...r2];
+      if (all.length > 0) {
+        Taro.showToast({ title: `${all.length}个超时座位已释放`, icon: 'none' });
+      }
+    };
+    doRelease();
+    const timer = setInterval(doRelease, 60000);
     return () => clearInterval(timer);
-  }, [releaseTimeoutSeats]);
+  }, [releaseTimeoutSeats, releaseAwayTimeout]);
 
   const handleBook = () => {
     if (!selectedSeat) {
@@ -100,6 +108,11 @@ const SeatPage: React.FC = () => {
   };
 
   const canBook = selectedSeat && totalMinutes > 0;
+
+  const zones = useMemo(() => {
+    const zoneSet = new Set(seats.filter((s) => s.enabled).map((s) => s.zone));
+    return Array.from(zoneSet);
+  }, [seats]);
 
   return (
     <ScrollView scrollY className={styles.page}>
@@ -185,7 +198,7 @@ const SeatPage: React.FC = () => {
           )}
 
           <View className={styles.zoneTabs}>
-            {['A区', 'B区', 'C区'].map((z) => (
+            {zones.map((z) => (
               <View
                 key={z}
                 className={classnames(styles.zoneTab, activeZone === z && styles.zoneTabActive)}

@@ -115,9 +115,23 @@
   color: $color-text-white;
 }
 
+.statusConfirmed {
+  background: rgba(0, 180, 42, 0.1);
+  color: $color-success;
+}
+
 .notifiedHint {
   background: rgba(22, 93, 255, 0.08);
   color: $color-info;
+  font-size: $font-size-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  margin-top: $spacing-sm;
+}
+
+.confirmedHint {
+  background: rgba(0, 180, 42, 0.08);
+  color: $color-success;
   font-size: $font-size-sm;
   padding: $spacing-sm $spacing-md;
   border-radius: $radius-md;

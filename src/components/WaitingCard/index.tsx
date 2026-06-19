@@ -17,6 +17,8 @@ const WaitingCard: React.FC<WaitingCardProps> = ({ item, onCancel, onConfirm }) 
       ? styles.statusWaiting
       : item.status === 'notified'
       ? styles.statusNotified
+      : item.status === 'confirmed'
+      ? styles.statusConfirmed
       : styles.statusCancelled;
 
   const statusText =
@@ -24,6 +26,8 @@ const WaitingCard: React.FC<WaitingCardProps> = ({ item, onCancel, onConfirm }) 
       ? '排队中'
       : item.status === 'notified'
       ? '待确认补位'
+      : item.status === 'confirmed'
+      ? '已补位'
       : item.status === 'cancelled'
       ? '已取消'
       : '已过期';
@@ -64,6 +68,12 @@ const WaitingCard: React.FC<WaitingCardProps> = ({ item, onCancel, onConfirm }) 
       {item.status === 'notified' && item.notifiedAt && (
         <View className={styles.notifiedHint}>
           🎉 有空位啦！请于10分钟内确认，超时将自动释放给下一位
+        </View>
+      )}
+
+      {item.status === 'confirmed' && (
+        <View className={styles.confirmedHint}>
+          ✅ 已成功补位，座位已为您锁定
         </View>
       )}
 

@@ -6,12 +6,14 @@ import { formatTime } from '@/utils/time';
 import styles from './index.module.scss';
 
 const MinePage: React.FC = () => {
-  const { bills, bookings, cancelBooking } = useStudyRoomStore();
+  const { bills, bookings, cancelBooking, checkin, markAway, markBack, checkout } = useStudyRoomStore();
 
   const stats = useMemo(() => {
     const paid = bills.filter((b) => b.status === 'paid');
     const totalHours = paid.reduce((s, b) => s + b.totalMinutes, 0) / 60;
-    const currentBooking = bookings.find((b) => b.status === 'reserved' || b.status === 'checkedin');
+    const currentBooking = bookings.find((b) =>
+      b.status === 'reserved' || b.status === 'checkedin' || b.status === 'away'
+    );
     return {
       orderCount: paid.length,
       totalHours: totalHours.toFixed(1),
@@ -51,7 +53,52 @@ const MinePage: React.FC = () => {
   };
 
   const handleCheckin = () => {
+    if (!stats.currentBooking) return;
+    checkin(stats.currentBooking.id);
     Taro.showToast({ title: '签到成功！欢迎使用', icon: 'success' });
+  };
+
+  const handleMarkAway = () => {
+    if (!stats.currentBooking) return;
+    markAway(stats.currentBooking.id);
+    Taro.showToast({ title: '已标记暂离，30分钟内请返回', icon: 'none' });
+  };
+
+  const handleMarkBack = () => {
+    if (!stats.currentBooking) return;
+    markBack(stats.currentBooking.id);
+    Taro.showToast({ title: '欢迎回来！', icon: 'success' });
+  };
+
+  const handleCheckout = () => {
+    if (!stats.currentBooking) return;
+    Taro.showModal({
+      title: '确认离座',
+      content: '离座后将释放座位并完成结算，确认离座？',
+      success: (res) => {
+        if (res.confirm && stats.currentBooking) {
+          checkout(stats.currentBooking.id);
+          Taro.showToast({ title: '已离座，费用已结算', icon: 'success' });
+        }
+      }
+    });
+  };
+
+  const getStatusText = () => {
+    if (!stats.currentBooking) return '';
+    const s = stats.currentBooking.status;
+    if (s === 'reserved') return '待签到';
+    if (s === 'checkedin') return '使用中';
+    if (s === 'away') return '暂离中';
+    return '';
+  };
+
+  const getStatusBadge = () => {
+    if (!stats.currentBooking) return '';
+    const s = stats.currentBooking.status;
+    if (s === 'away') return styles.badgeAway;
+    if (s === 'checkedin') return styles.badgeActive;
+    return styles.badgeReserved;
   };
 
   return (
@@ -85,8 +132,8 @@ const MinePage: React.FC = () => {
         <View className={styles.currentBooking}>
           <View className={styles.bookingTitle}>
             <Text>当前预约</Text>
-            <Text className={styles.bookingBadge}>
-              {stats.currentBooking.status === 'checkedin' ? '使用中' : '待签到'}
+            <Text className={`${styles.bookingBadge} ${getStatusBadge()}`}>
+              {getStatusText()}
             </Text>
           </View>
           <View className={styles.bookingRow}>
@@ -99,10 +146,19 @@ const MinePage: React.FC = () => {
               {formatTime(stats.currentBooking.startTime)} - {formatTime(stats.currentBooking.endTime)}
             </Text>
           </View>
-          <View className={styles.bookingRow}>
-            <Text>超时释放</Text>
-            <Text className={styles.bookingValue}>预约后 {stats.currentBooking.timeoutMinutes} 分钟内</Text>
-          </View>
+          {stats.currentBooking.status === 'reserved' && (
+            <View className={styles.bookingRow}>
+              <Text>签到时限</Text>
+              <Text className={styles.bookingValue}>预约后 {stats.currentBooking.timeoutMinutes} 分钟内</Text>
+            </View>
+          )}
+          {stats.currentBooking.status === 'away' && stats.currentBooking.awayAt && (
+            <View className={styles.bookingRow}>
+              <Text>暂离时限</Text>
+              <Text className={styles.bookingValue}>{stats.currentBooking.awayTimeoutMinutes} 分钟内返回</Text>
+            </View>
+          )}
+
           <View className={styles.bookingBtns}>
             <Button className={`${styles.bookingBtn} ${styles.btnGhost}`} onClick={handleCancelBooking}>
               取消预约
@@ -111,6 +167,26 @@ const MinePage: React.FC = () => {
               <Button className={`${styles.bookingBtn} ${styles.btnPrimary}`} onClick={handleCheckin}>
                 立即签到
               </Button>
+            )}
+            {stats.currentBooking.status === 'checkedin' && (
+              <>
+                <Button className={`${styles.bookingBtn} ${styles.btnAway}`} onClick={handleMarkAway}>
+                  暂离
+                </Button>
+                <Button className={`${styles.bookingBtn} ${styles.btnPrimary}`} onClick={handleCheckout}>
+                  离座结算
+                </Button>
+              </>
+            )}
+            {stats.currentBooking.status === 'away' && (
+              <>
+                <Button className={`${styles.bookingBtn} ${styles.btnPrimary}`} onClick={handleMarkBack}>
+                  已返回
+                </Button>
+                <Button className={`${styles.bookingBtn} ${styles.btnGhost}`} onClick={handleCheckout}>
+                  离座结算
+                </Button>
+              </>
             )}
           </View>
         </View>

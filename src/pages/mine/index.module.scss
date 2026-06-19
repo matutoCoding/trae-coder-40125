@@ -206,3 +206,23 @@
   background: $color-bg-page;
   color: $color-text-secondary;
 }
+
+.btnAway {
+  background: linear-gradient(135deg, $color-warning 0%, #FF8F1F 100%);
+  color: $color-text-white;
+}
+
+.badgeReserved {
+  background: rgba(255, 125, 0, 0.1);
+  color: $color-warning;
+}
+
+.badgeActive {
+  background: rgba(0, 180, 42, 0.1);
+  color: $color-success;
+}
+
+.badgeAway {
+  background: rgba(245, 63, 63, 0.1);
+  color: $color-error;
+}

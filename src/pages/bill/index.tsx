@@ -20,6 +20,8 @@ const BillPage: React.FC = () => {
     return { total, count: paid.length, totalHours };
   }, [bills]);
 
+  const enabledRates = useMemo(() => rates.filter((r) => r.enabled), [rates]);
+
   const getTagClass = (type: RateType) =>
     type === 'peak' ? styles.tagPeak : styles.tagOffpeak;
 
@@ -82,7 +84,7 @@ const BillPage: React.FC = () => {
       {tab === 'rates' && (
         <View className={styles.rateCard}>
           <Text className={styles.rateTitle}>📊 时段费率表</Text>
-          {rates.map((r) => (
+          {enabledRates.map((r) => (
             <View key={r.id} className={styles.rateItem}>
               <View className={styles.rateLeft}>
                 <View className={classnames(styles.rateTag, getTagClass(r.type))}>

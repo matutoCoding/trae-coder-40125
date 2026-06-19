@@ -13,7 +13,8 @@ export const bookings: Booking[] = [
     status: 'checkedin',
     createdAt: dayjs().hour(8).minute(30).format('YYYY-MM-DD HH:mm'),
     checkinTime: dayjs().hour(8).minute(55).format('YYYY-MM-DD HH:mm'),
-    timeoutMinutes: 15
+    timeoutMinutes: 15,
+    awayTimeoutMinutes: 30
   },
   {
     id: 'bk_002',
@@ -25,7 +26,8 @@ export const bookings: Booking[] = [
     endTime: dayjs().hour(14).minute(0).format('YYYY-MM-DD HH:mm'),
     status: 'reserved',
     createdAt: dayjs().hour(9).minute(50).format('YYYY-MM-DD HH:mm'),
-    timeoutMinutes: 15
+    timeoutMinutes: 15,
+    awayTimeoutMinutes: 30
   },
   {
     id: 'bk_003',
@@ -37,7 +39,8 @@ export const bookings: Booking[] = [
     endTime: dayjs().hour(20).minute(0).format('YYYY-MM-DD HH:mm'),
     status: 'reserved',
     createdAt: dayjs().hour(13).minute(40).format('YYYY-MM-DD HH:mm'),
-    timeoutMinutes: 15
+    timeoutMinutes: 15,
+    awayTimeoutMinutes: 30
   },
   {
     id: 'bk_004',
@@ -49,6 +52,7 @@ export const bookings: Booking[] = [
     endTime: dayjs().hour(22).minute(0).format('YYYY-MM-DD HH:mm'),
     status: 'reserved',
     createdAt: dayjs().hour(17).minute(30).format('YYYY-MM-DD HH:mm'),
-    timeoutMinutes: 15
+    timeoutMinutes: 15,
+    awayTimeoutMinutes: 30
   }
 ];

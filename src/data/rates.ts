@@ -8,7 +8,8 @@ export const timeRates: TimeRate[] = [
     startTime: '08:00',
     endTime: '12:00',
     pricePerHour: 4,
-    dayOfWeek: [1, 2, 3, 4, 5, 6, 7]
+    dayOfWeek: [1, 2, 3, 4, 5, 6, 7],
+    enabled: true
   },
   {
     id: 'rate_2',
@@ -17,7 +18,8 @@ export const timeRates: TimeRate[] = [
     startTime: '12:00',
     endTime: '14:00',
     pricePerHour: 8,
-    dayOfWeek: [1, 2, 3, 4, 5, 6, 7]
+    dayOfWeek: [1, 2, 3, 4, 5, 6, 7],
+    enabled: true
   },
   {
     id: 'rate_3',
@@ -26,7 +28,8 @@ export const timeRates: TimeRate[] = [
     startTime: '14:00',
     endTime: '18:00',
     pricePerHour: 5,
-    dayOfWeek: [1, 2, 3, 4, 5, 6, 7]
+    dayOfWeek: [1, 2, 3, 4, 5, 6, 7],
+    enabled: true
   },
   {
     id: 'rate_4',
@@ -35,7 +38,8 @@ export const timeRates: TimeRate[] = [
     startTime: '18:00',
     endTime: '22:00',
     pricePerHour: 10,
-    dayOfWeek: [1, 2, 3, 4, 5, 6, 7]
+    dayOfWeek: [1, 2, 3, 4, 5, 6, 7],
+    enabled: true
   },
   {
     id: 'rate_5',
@@ -44,6 +48,7 @@ export const timeRates: TimeRate[] = [
     startTime: '22:00',
     endTime: '23:00',
     pricePerHour: 3,
-    dayOfWeek: [1, 2, 3, 4, 5, 6, 7]
+    dayOfWeek: [1, 2, 3, 4, 5, 6, 7],
+    enabled: true
   }
 ];

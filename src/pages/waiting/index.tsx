@@ -7,7 +7,7 @@ import WaitingCard from '@/components/WaitingCard';
 import { formatTime } from '@/utils/time';
 import styles from './index.module.scss';
 
-type FilterType = 'all' | 'waiting' | 'notified' | 'history';
+type FilterType = 'all' | 'waiting' | 'notified' | 'confirmed' | 'history';
 
 const WaitingPage: React.FC = () => {
   const {
@@ -18,7 +18,7 @@ const WaitingPage: React.FC = () => {
     seats,
     addWaiting,
     cancelWaiting,
-    notifyNextWaiting
+    confirmWaiting
   } = useStudyRoomStore();
 
   const [filter, setFilter] = useState<FilterType>('all');
@@ -59,17 +59,12 @@ const WaitingPage: React.FC = () => {
   };
 
   const handleConfirm = (id: string) => {
-    Taro.showToast({ title: '补位确认成功！请尽快签到', icon: 'success' });
-    cancelWaiting(id);
-    console.log('[WaitingPage] 确认补位:', id);
-  };
-
-  const handleNotify = () => {
-    const next = notifyNextWaiting();
-    if (next) {
-      Taro.showToast({ title: `已通知 ${next.userName} 补位`, icon: 'none' });
+    const booking = confirmWaiting(id);
+    if (booking) {
+      Taro.showToast({ title: `补位成功！座位${booking.seatCode}，请15分钟内签到`, icon: 'success', duration: 3000 });
+      console.log('[WaitingPage] 补位确认:', booking);
     } else {
-      Taro.showToast({ title: '暂无候补中用户', icon: 'none' });
+      Taro.showToast({ title: '补位失败，座位已被占用', icon: 'none' });
     }
   };
 
@@ -77,6 +72,7 @@ const WaitingPage: React.FC = () => {
     { key: 'all', label: '全部' },
     { key: 'waiting', label: '排队中' },
     { key: 'notified', label: '待确认' },
+    { key: 'confirmed', label: '已补位' },
     { key: 'history', label: '历史' }
   ];
 
@@ -115,13 +111,6 @@ const WaitingPage: React.FC = () => {
         </View>
         <Button className={styles.addBtn} onClick={handleAddWaiting}>
           ➕ 加入候补队列
-        </Button>
-        <Button
-          className={styles.addBtn}
-          onClick={handleNotify}
-          style={{ background: 'linear-gradient(135deg, #2B7A68 0%, #4CB391 100%)', marginTop: 16 }}
-        >
-          🔔 模拟通知下一位（测试）
         </Button>
       </View>
 

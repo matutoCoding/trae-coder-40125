@@ -37,7 +37,8 @@ const generateSeats = (): Seat[] => {
           col,
           type,
           status,
-          zone
+          zone,
+          enabled: !disabledSeats.includes(code)
         });
       }
     }
