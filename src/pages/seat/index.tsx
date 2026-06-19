@@ -3,6 +3,7 @@ import { View, Text, Button, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import classnames from 'classnames';
 import dayjs from 'dayjs';
+import { useDidShow } from '@tarojs/taro';
 import { useStudyRoomStore } from '@/store';
 import { calculateBillingSegments, calculateTotalAmount, formatMinutes, getRateTypeLabel } from '@/utils/billing';
 import { diffMinutes } from '@/utils/time';
@@ -23,9 +24,7 @@ const SeatPage: React.FC = () => {
     setEndTime,
     toggleSeatSelection,
     bookSeat,
-    addWaiting,
-    releaseTimeoutSeats,
-    releaseAwayTimeout
+    addWaiting
   } = useStudyRoomStore();
 
   const [activeZone, setActiveZone] = useState('A区');
@@ -69,19 +68,15 @@ const SeatPage: React.FC = () => {
   const totalAmount = useMemo(() => calculateTotalAmount(segments), [segments]);
   const totalMinutes = useMemo(() => segments.reduce((s, x) => s + x.durationMinutes, 0), [segments]);
 
-  useEffect(() => {
-    const doRelease = () => {
-      const r1 = releaseTimeoutSeats();
-      const r2 = releaseAwayTimeout();
-      const all = [...r1, ...r2];
-      if (all.length > 0) {
-        Taro.showToast({ title: `${all.length}个超时座位已释放`, icon: 'none' });
-      }
-    };
-    doRelease();
-    const timer = setInterval(doRelease, 60000);
-    return () => clearInterval(timer);
-  }, [releaseTimeoutSeats, releaseAwayTimeout]);
+  useDidShow(() => {
+    const { releaseTimeoutSeats, releaseAwayTimeout } = useStudyRoomStore.getState();
+    const r1 = releaseTimeoutSeats();
+    const r2 = releaseAwayTimeout();
+    const all = [...r1, ...r2];
+    if (all.length > 0) {
+      Taro.showToast({ title: `${all.length}个超时座位已释放`, icon: 'none' });
+    }
+  });
 
   const handleBook = () => {
     if (!selectedSeat) {
@@ -94,7 +89,7 @@ const SeatPage: React.FC = () => {
     }
     const booking = bookSeat();
     if (booking) {
-      Taro.showToast({ title: '预订成功！请15分钟内签到', icon: 'success' });
+      Taro.showToast({ title: '预订成功！请于开始时间后15分钟内签到', icon: 'success', duration: 2500 });
       console.log('[SeatPage] 预订成功:', booking);
     }
   };

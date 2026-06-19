@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, Button, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
+import dayjs from 'dayjs';
 import { useStudyRoomStore } from '@/store';
 import { formatTime } from '@/utils/time';
 import styles from './index.module.scss';
@@ -149,7 +150,9 @@ const MinePage: React.FC = () => {
           {stats.currentBooking.status === 'reserved' && (
             <View className={styles.bookingRow}>
               <Text>签到时限</Text>
-              <Text className={styles.bookingValue}>预约后 {stats.currentBooking.timeoutMinutes} 分钟内</Text>
+              <Text className={styles.bookingValue}>
+                {dayjs(stats.currentBooking.startTime).add(stats.currentBooking.timeoutMinutes, 'minute').format('HH:mm')} 前未签到将自动释放
+              </Text>
             </View>
           )}
           {stats.currentBooking.status === 'away' && stats.currentBooking.awayAt && (

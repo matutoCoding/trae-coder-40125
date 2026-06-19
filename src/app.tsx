@@ -1,16 +1,20 @@
 import React, { useEffect } from 'react';
 import { useDidShow, useDidHide } from '@tarojs/taro';
-// 全局样式
+import { useStudyRoomStore } from '@/store';
 import './app.scss';
 
 function App(props) {
-  // 可以使用所有的 React Hooks
-  useEffect(() => {});
+  const startGlobalTimer = useStudyRoomStore((s) => s.startGlobalTimer);
 
-  // 对应 onShow
-  useDidShow(() => {});
+  useEffect(() => {
+    startGlobalTimer();
+  }, [startGlobalTimer]);
 
-  // 对应 onHide
+  useDidShow(() => {
+    useStudyRoomStore.getState().releaseTimeoutSeats();
+    useStudyRoomStore.getState().releaseAwayTimeout();
+  });
+
   useDidHide(() => {});
 
   return props.children;
