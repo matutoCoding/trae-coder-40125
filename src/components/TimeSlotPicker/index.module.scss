@@ -1,0 +1,94 @@
+@use '@/styles/variables.scss' as *;
+
+.wrapper {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+}
+
+.label {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+}
+
+.slotGroup {
+  flex: 1;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-sm;
+}
+
+.groupLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-xs;
+}
+
+.slots {
+  @include scroll-x-container;
+}
+
+.slot {
+  @include scroll-x-item(120rpx);
+  text-align: center;
+  padding: $spacing-sm 0;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  margin-right: $spacing-xs;
+  color: $color-text-secondary;
+  background: $color-bg-card;
+  transition: all $transition-fast;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.slotActive {
+  background: $color-primary;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.slotDisabled {
+  color: $color-text-disabled;
+  background: transparent;
+}
+
+.arrow {
+  font-size: $font-size-xl;
+  color: $color-primary;
+  font-weight: $font-weight-bold;
+  padding: 0 $spacing-xs;
+}
+
+.duration {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-divider;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.durationLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.durationValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}

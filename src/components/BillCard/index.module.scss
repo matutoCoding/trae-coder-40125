@@ -1,0 +1,137 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.seatCode {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.status {
+  font-size: $font-size-xs;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+  font-weight: $font-weight-medium;
+}
+
+.statusPaid {
+  background: rgba(0, 180, 42, 0.1);
+  color: $color-success;
+}
+
+.statusPending {
+  background: rgba(255, 125, 0, 0.1);
+  color: $color-warning;
+}
+
+.statusRefunded {
+  background: rgba(134, 144, 156, 0.1);
+  color: $color-text-tertiary;
+}
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.amountRow {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-divider;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.amountLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.amountValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.segments {
+  margin-top: $spacing-sm;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.segment {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-xs 0;
+
+  &:not(:last-child) {
+    border-bottom: 2rpx dashed $color-border;
+    padding-bottom: $spacing-sm;
+    margin-bottom: $spacing-xs;
+  }
+}
+
+.segLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.segTag {
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-xs;
+  font-weight: $font-weight-medium;
+}
+
+.tagPeak {
+  background: rgba(245, 63, 63, 0.1);
+  color: $color-peak;
+}
+
+.tagOffpeak {
+  background: rgba(0, 180, 42, 0.1);
+  color: $color-offpeak;
+}
+
+.tagNormal {
+  background: rgba(43, 122, 104, 0.1);
+  color: $color-primary;
+}
+
+.segTime {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.segSub {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}

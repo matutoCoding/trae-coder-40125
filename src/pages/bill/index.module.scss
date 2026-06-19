@@ -1,0 +1,177 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding: $spacing-lg $page-padding;
+  box-sizing: border-box;
+}
+
+.hero {
+  background: linear-gradient(135deg, $color-primary 0%, #1E5A4D 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-xl $spacing-lg;
+  color: $color-text-white;
+  margin-bottom: $spacing-lg;
+  box-shadow: 0 8rpx 24rpx rgba(43, 122, 104, 0.25);
+}
+
+.heroTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.heroSub {
+  font-size: $font-size-sm;
+  opacity: 0.85;
+}
+
+.totalRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: $spacing-lg;
+}
+
+.totalLabel {
+  font-size: $font-size-sm;
+  opacity: 0.85;
+}
+
+.totalValue {
+  font-size: 64rpx;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+}
+
+.totalUnit {
+  font-size: $font-size-lg;
+  opacity: 0.85;
+  margin-left: $spacing-xs;
+}
+
+.summary {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.summaryBox {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: $radius-md;
+  padding: $spacing-sm;
+  text-align: center;
+}
+
+.summaryNum {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+}
+
+.summaryLabel {
+  font-size: $font-size-xs;
+  opacity: 0.85;
+}
+
+.tabs {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  padding: $spacing-xs;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: $spacing-sm 0;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  transition: all $transition-fast;
+}
+
+.tabActive {
+  background: $color-primary;
+  color: $color-text-white;
+}
+
+.rateCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+}
+
+.rateTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.rateItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm 0;
+  border-bottom: 2rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.rateLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.rateTag {
+  font-size: 20rpx;
+  padding: 2rpx 12rpx;
+  border-radius: $radius-xs;
+  font-weight: $font-weight-medium;
+}
+
+.tagPeak {
+  background: rgba(245, 63, 63, 0.1);
+  color: $color-peak;
+}
+
+.tagOffpeak {
+  background: rgba(0, 180, 42, 0.1);
+  color: $color-offpeak;
+}
+
+.rateTime {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.ratePrice {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.empty {
+  text-align: center;
+  padding: 120rpx 0;
+  color: $color-text-tertiary;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-md;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+}

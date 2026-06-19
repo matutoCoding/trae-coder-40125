@@ -1,0 +1,39 @@
+// ============================================
+// 主题配色变量 - 付费自习室
+// ============================================
+
+// 品牌主题色（深青绿 - 安静专注）
+$color-primary: #2B7A68;
+$color-primary-light: #4CB391;
+$color-primary-dark: #1E5A4D;
+
+// 功能色
+$color-success: #00B42A;
+$color-warning: #FFA940;
+$color-error: #F53F3F;
+$color-info: #2B7A68;
+
+// 背景色
+$color-bg-page: #F4F7F5;
+$color-bg-card: #FFFFFF;
+$color-bg-hover: #F0F4F2;
+
+// 文本色
+$color-text-primary: #1D2129;
+$color-text-secondary: #4E5969;
+$color-text-tertiary: #86909C;
+$color-text-disabled: #C9CDD4;
+$color-text-white: #FFFFFF;
+
+// 边框色
+$color-border: #E5E6EB;
+$color-divider: #F2F3F5;
+
+// 业务相关色
+$color-peak: #F53F3F;       // 高峰时段
+$color-offpeak: #00B42A;    // 平峰时段
+$color-seat-free: #2B7A68;  // 空闲座位
+$color-seat-occupied: #86909C; // 已占用
+$color-seat-selected: #FFA940; // 已选中
+$color-seat-waiting: #FF7D00;  // 候补
+$color-price-bg: #FFF7E6;   // 价格标签背景
